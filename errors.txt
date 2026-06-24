@@ -1,0 +1,3 @@
+This error comes directly from Multer on your backend.
+
+MulterError: Unexpected field means your frontend is sending the file payload under a form-data key name that doesn't match what Multer is listening for on your backend.

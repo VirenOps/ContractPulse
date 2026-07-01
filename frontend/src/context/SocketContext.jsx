@@ -1,34 +1,17 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import React, { createContext, useContext } from 'react';
 
+// 1. Keep the context definition intact
 const SocketContext = createContext(null);
 
-export function SocketProvider({ children, companyId }) {
-  const [socket, setSocket] = useState(null);
-
-  useEffect(() => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-    const socketInstance = io(backendUrl);
-
-    socketInstance.on('connect', () => {
-      console.log('🔌 Connected to real-time notification engine');
-      if (companyId) {
-        socketInstance.emit('join-company-room', companyId);
-      }
-    });
-
-    setSocket(socketInstance);
-
-    return () => {
-      socketInstance.disconnect();
-    };
-  }, [companyId]);
-
+export function SocketProvider({ children }) {
+  // 🚫 All connection logic (io, useEffect, setSocket) has been completely stripped out.
+  // This provider now acts as a silent pass-through wrapper.
   return (
-    <SocketContext.Provider value={socket}>
+    <SocketContext.Provider value={null}>
       {children}
     </SocketContext.Provider>
   );
 }
 
+// 2. Safely return null so components calling useSocket() don't crash
 export const useSocket = () => useContext(SocketContext);

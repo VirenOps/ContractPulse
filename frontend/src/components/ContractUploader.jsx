@@ -20,11 +20,11 @@ export default function ContractUploader({ onUploadSuccess }) {
 
     try {
       const response = await fetch('/api/contracts/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}` // 🔑 Attach token here (Do NOT include Content-Type!)
-        },
-        body: formData,
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}` // 🔑 Keep this exactly as is!
+      },
+      body: formData,
       });
 
       if (!response.ok) {

@@ -5,6 +5,7 @@ import cors from 'cors'
 import authRoutes from './routes/auth_route.js'
 import contractRoutes from './routes/contract.js'
 import { createServer } from 'http';
+import './workers/contract_worker.js'
 
 
 
@@ -33,4 +34,3 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
 
-import './workers/contract_worker.js'

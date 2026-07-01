@@ -67,32 +67,32 @@ router.get('/:id', authenticate, async (req, res) => {
 })
 
 
-router.patch('/:id/decision', async (req, res) => {
-  const { renewalDecision } = req.body; // could be 'RENEW', 'TERMINATE', or null
-  const contractId = req.params.id;
+router.patch('/:id/decision', authenticate, async (req, res) => {
+  try {
+    const { renewalDecision } = req.body
+    const contractId = req.params.id
 
-  // 1. Update the record field in your SQL/Supabase database
-  const { data, error } = await supabase
-    .from('contracts')
-    .update({ renewalDecision })
-    .eq('id', contractId)
-    .select()
-    .single();
+    const contract = await prisma.contract.update({
+      where: { id: contractId },
+      data: {
+        renewalDecision: renewalDecision ?? null,
+        alertState: renewalDecision ? 'ACKNOWLEDGED' : 'MONITORING'
+      }
+    })
 
-  // 2. 🧠 CRITICAL BACKGROUND ENGINE LOOP RESTORATION
-  if (renewalDecision === null) {
-    // If the operator changed their mind and wiped the decision,
-    // you must recreate the BullMQ delayed background cron warning alert!
-    await alertQueue.add('send-deadline-warning', 
-      { contractId }, 
-      { delay: calculateTargetDelay(data.noticeDeadline) }
-    );
-  } else {
-    // If they picked an option, remove any active delayed warning jobs
-    await removeActiveDelayedJobs(contractId);
+    await prisma.auditLog.create({
+      data: {
+        contractId,
+        eventType: 'decision_updated',
+        metadata: { renewalDecision }
+      }
+    })
+
+    res.json(contract)
+
+  } catch (err) {
+    res.status(500).json({ error: err.message })
   }
-
-  res.json(data);
-});
+})
 
 export default router

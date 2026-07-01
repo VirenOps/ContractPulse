@@ -19,7 +19,14 @@ async function scheduleSingleAlert(contractId, deadlineDate, daysBefore, tier) {
   targetDate.setDate(targetDate.getDate() - daysBefore);
 
   const now = new Date();
-  const delay = targetDate.getTime() - now.getTime();
+  let delay = targetDate.getTime() - now.getTime();
+
+  // only for testing remove before actual use
+  const TEST_MODE = true
+  if (TEST_MODE) {
+    const testDelays = { L1: 10000, L2: 20000, L3: 30000 } // fires at 10s, 20s, 30s
+    delay = testDelays[tier]
+  }
 
   // If the calculated timeline is already in the past, skip scheduling it
   if (delay <= 0) {
@@ -103,7 +110,7 @@ const escalationWorker = new Worker(ESCALATION_QUEUE_NAME, async (job) => {
 
   // Send the email via Resend
   await resend.emails.send({
-    from: 'Contract Management <escalations@yourdomain.com>',
+    from: 'Contract Management <onboarding@resend.dev>',
     to: recipientEmails,
     subject: subjectMap[tier] || `Contract Alert: ${contract.file_name}`,
     html: `
